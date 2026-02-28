@@ -1,107 +1,146 @@
-#include "raylib.h"
+﻿#include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-#include <raymath.h>
-#include <algorithm>
-#include <string>
-#include <iostream>
-#include "config.hpp"
-#include <unordered_map>
+#include <vector>
+#include <cstdint>
+#include <optional>
 
-// Entity 
-using EntityId = uint32_t;
-EntityId nextId = 0;
-EntityId CreateEntity() { return nextId++; }
+// ─────────────────────────────────────────
+// GRID SETUP
+// ─────────────────────────────────────────
+const int COLS = 40;
+const int ROWS = 30;
+const int CELL_SIZE = 20; // pixels per cell → 800x600 window
 
-// Components 
-struct Position { float x, y; };
-struct Velocity { float dx, dy; };
-struct Renderable { Color color; float size; };
+// What can live in a cell
+enum class CellType { Empty, Grass, Rabbit, Fox };
 
-// Components Stores
-std::unordered_map<EntityId, Position> positions;
-std::unordered_map<EntityId, Velocity> velocities;
-std::unordered_map<EntityId, Renderable> renderables;
+struct Cell {
+    CellType type = CellType::Empty;
+    int      entityIndex = -1; // index into whichever array owns this agent
+};
 
+// The grid itself — flat array, indexed as [y * COLS + x]
+std::vector<Cell> grid(COLS* ROWS);
+
+// Helper accessors so you never do index math by hand
+Cell& GetCell(int x, int y) { return grid[y * COLS + x]; }
+bool  InBounds(int x, int y) { return x >= 0 && x < COLS && y >= 0 && y < ROWS; }
+void  ClearCell(int x, int y) { grid[y * COLS + x] = { CellType::Empty, -1 }; }
+void  SetCell(int x, int y, CellType t, int idx) { grid[y * COLS + x] = { t, idx }; }
+
+// ─────────────────────────────────────────
+// COMPONENTS (same as before, but position
+// is now a grid coordinate, not pixels)
+// ─────────────────────────────────────────
+struct Position { int x, y; }; // grid coords
+
+struct Rabbit {
+    Position pos;
+    int energy = 10;
+};
+
+struct Fox {
+    Position pos;
+    int energy = 15;
+};
+
+std::vector<Rabbit> rabbits;
+std::vector<Fox>    foxes;
+
+// ─────────────────────────────────────────
+// SPAWNING
+// ─────────────────────────────────────────
+void SpawnRabbit(int x, int y) {
+    if (!InBounds(x, y)) return;
+    if (GetCell(x, y).type != CellType::Empty) return;
+
+    int idx = rabbits.size();
+    rabbits.push_back({ {x, y}, 10 });
+    SetCell(x, y, CellType::Rabbit, idx);
+}
+
+void SpawnFox(int x, int y) {
+    if (!InBounds(x, y)) return;
+    if (GetCell(x, y).type != CellType::Empty) return;
+
+    int idx = foxes.size();
+    foxes.push_back({ {x, y}, 15 });
+    SetCell(x, y, CellType::Fox, idx);
+}
+
+// ─────────────────────────────────────────
 // SYSTEMS
+// ─────────────────────────────────────────
 
-// Moves entities that have a postions and a velocity
-void MoveSystem(float dt) {
-	for (auto& [id, velo] : velocities) {
-		if (positions.count(id)) {
-			positions[id].x += velo.dx * dt;
-			positions[id].y += velo.dy * dt;
-		}
-	}
+// Tries to move a rabbit one step in a random direction
+void UpdateRabbits() {
+    int dirs[4][2] = { {0,-1},{0,1},{-1,0},{1,0} };
+
+    for (auto& rabbit : rabbits) {
+        auto [dx, dy] = dirs[GetRandomValue(0, 3)];
+        int nx = rabbit.pos.x + dx;
+        int ny = rabbit.pos.y + dy;
+
+        if (!InBounds(nx, ny)) continue;
+        if (GetCell(nx, ny).type != CellType::Empty) continue;
+
+        // vacate old cell, occupy new one
+        ClearCell(rabbit.pos.x, rabbit.pos.y);
+        rabbit.pos = { nx, ny };
+        SetCell(nx, ny, CellType::Rabbit, -1); // -1 is fine for now
+    }
 }
 
-// Bounces entities off the wall 
-void BounceSystem() {
-	for (auto& [id, velo] : velocities) {
-		if (!positions.count(id)) continue;
-		auto& pos = positions[id];
-
-		if (pos.x < 0 or pos.x > GetScreenWidth()) velo.dx *= -1;
-		if (pos.y < 0 or pos.y > GetScreenHeight()) velo.dy *= -1;
-	}
+// Renders the grid — purely visual, reads grid state only
+void RenderGrid() {
+    for (int y = 0; y < ROWS; y++) {
+        for (int x = 0; x < COLS; x++) {
+            Color color = BLACK;
+            switch (GetCell(x, y).type) {
+            case CellType::Grass:  color = DARKGREEN; break;
+            case CellType::Rabbit: color = WHITE;     break;
+            case CellType::Fox:    color = ORANGE;    break;
+            default: break;
+            }
+            DrawRectangle(x * CELL_SIZE, y * CELL_SIZE,
+                CELL_SIZE - 1, CELL_SIZE - 1, // -1 gives a grid gap
+                color);
+        }
+    }
 }
 
-
-// Renders entities based on the specified color
-void RenderSystem() {
-	for (auto& [id, rend] : renderables) {
-		if (!positions.count(id)) continue;
-		auto& pos = positions[id];
-		DrawRectangle((int)pos.x, (int)pos.y,
-			(int)rend.size, (int)rend.size,
-			rend.color);
-	}
-}
-
-// MISC FUNCTIONS
-void InitlizeEntities() {
-}
-
-
+// ─────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────
 int main() {
-	InitWindow(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, "Agent Cell");
-	SetTargetFPS(Config::TARGET_FPS);
+    InitWindow(COLS * CELL_SIZE, ROWS * CELL_SIZE, "Grid ECS");
+    SetTargetFPS(10); // slow enough to watch
 
-	InitlizeEntities();
+    // Seed a few agents
+    SpawnRabbit(5, 5);
+    SpawnRabbit(10, 8);
+    SpawnFox(20, 15);
 
-	EntityId rabbit = CreateEntity();
-	positions[rabbit] = { 100, 100};
-	velocities[rabbit] = { 120, 80};
-	renderables[rabbit] = { WHITE, 12};
+    // Sprinkle some grass
+    for (int i = 0; i < 100; i++) {
+        int x = GetRandomValue(0, COLS - 1);
+        int y = GetRandomValue(0, ROWS - 1);
+        if (GetCell(x, y).type == CellType::Empty)
+            SetCell(x, y, CellType::Grass, -1);
+    }
 
+    while (!WindowShouldClose()) {
+        UpdateRabbits();
 
-	EntityId fox = CreateEntity();
-	positions[fox] = { 400, 300};
-	velocities[fox] = { -90, 110};
-	renderables[fox] = { ORANGE, 16};
+        BeginDrawing();
+        ClearBackground(BLACK);
+        RenderGrid();
+        EndDrawing();
+    }
 
-	EntityId grass = CreateEntity();
-	positions[grass] = { 200, 400};
-	renderables[grass] = { GREEN, 10};
-
-	while (!WindowShouldClose()) {
-		float deltaTime = GetFrameTime();
-
-		// Update
-		MoveSystem(deltaTime);
-		BounceSystem();
-
-		// Rendering
-		BeginDrawing();
-
-		ClearBackground(BLACK);
-		RenderSystem();
-
-		EndDrawing();
-	}
-
-	CloseWindow();
-	return 0;
+    CloseWindow();
+    return 0;
 }
