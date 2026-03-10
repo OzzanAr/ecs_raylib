@@ -4,7 +4,10 @@ namespace Config {
     // World
     constexpr int GRID_WIDTH = 100;
     constexpr int GRID_HEIGHT = 100;
-    constexpr int CELL_SIZE = 8; // pixels
+    constexpr int CELL_SIZE = 20; // pixels
+
+	const int COLS = 40;
+	const int ROWS = 30;
 
     // ECS Values
     constexpr int MAX_COMPONETS = 10;

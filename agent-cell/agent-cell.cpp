@@ -7,13 +7,13 @@
 #include <cstdint>
 #include <optional>
 #include "component.hpp"
+#include "config.hpp"
+
+using namespace Config;
 
 // ─────────────────────────────────────────
 // GRID SETUP
 // ─────────────────────────────────────────
-const int COLS = 40;
-const int ROWS = 30;
-const int CELL_SIZE = 20; // pixels per cell → 800x600 window
 
 // What can live in a cell
 enum class CellType { Empty, Grass, Rabbit, Fox };
