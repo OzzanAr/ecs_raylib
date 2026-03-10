@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
+#include "component.hpp"
 
 // ─────────────────────────────────────────
 // GRID SETUP
@@ -35,7 +36,6 @@ void  SetCell(int x, int y, CellType t, int idx) { grid[y * COLS + x] = { t, idx
 // COMPONENTS (same as before, but position
 // is now a grid coordinate, not pixels)
 // ─────────────────────────────────────────
-struct Position { int x, y; }; // grid coords
 
 struct Rabbit {
     Position pos;
@@ -101,7 +101,7 @@ void RenderGrid() {
             Color color = BLACK;
             switch (GetCell(x, y).type) {
             case CellType::Grass:  color = DARKGREEN; break;
-            case CellType::Rabbit: color = WHITE;     break;
+            case CellType::Rabbit: color = PINK;     break;
             case CellType::Fox:    color = ORANGE;    break;
             default: break;
             }
