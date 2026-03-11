@@ -8,7 +8,7 @@
 #include <optional>
 #include "component.hpp"
 #include "config.hpp"
-#include "Cell.hpp"
+#include "cell.hpp"
 
 using namespace Config;
 
