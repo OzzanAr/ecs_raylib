@@ -136,13 +136,15 @@
     <ClCompile Include="agent-cell.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="entityManager.cpp" />
+    <ClCompile Include="grid.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cell.hpp" />
+    <ClInclude Include="cell.h" />
     <ClInclude Include="component.hpp" />
-    <ClInclude Include="config.hpp" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="entity.hpp" />
     <ClInclude Include="entityManager.hpp" />
+    <ClInclude Include="grid.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
