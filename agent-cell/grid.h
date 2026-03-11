@@ -1,6 +1,4 @@
-#ifndef GRID_H 
-#define GRID_H 
-
+#pragma once
 #include "config.h"
 #include <vector>
 
@@ -13,7 +11,7 @@ enum class CellType {
 	Fox
 };
 
-struct  Cell
+struct Cell
 {
 	CellType type = CellType::Empty;
 	int entityIndex = -1;
@@ -26,5 +24,3 @@ bool  InBounds(int x, int y);
 void  ClearCell(int x, int y);
 void  SetCell(int x, int y, CellType t, int idx);
 void  InitGrid();
-
-#endif
