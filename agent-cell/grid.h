@@ -2,12 +2,24 @@
 #define GRID_H 
 
 #include "config.h"
-#include "cell.h"
 #include <vector>
 
 using namespace Config;
 
-std::vector<Cell> grid;
+enum class CellType { 
+	Empty, 
+	Grass, 
+	Rabbit, 
+	Fox
+};
+
+struct  Cell
+{
+	CellType type = CellType::Empty;
+	int entityIndex = -1;
+};
+
+extern std::vector<Cell> grid;
 
 Cell& GetCell(int x, int y);
 bool  InBounds(int x, int y);
