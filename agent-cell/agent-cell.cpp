@@ -8,20 +8,13 @@
 #include <optional>
 #include "component.hpp"
 #include "config.hpp"
+#include "Cell.hpp"
 
 using namespace Config;
 
 // ─────────────────────────────────────────
 // GRID SETUP
 // ─────────────────────────────────────────
-
-// What can live in a cell
-enum class CellType { Empty, Grass, Rabbit, Fox };
-
-struct Cell {
-    CellType type = CellType::Empty;
-    int      entityIndex = -1; // index into whichever array owns this agent
-};
 
 // The grid itself — flat array, indexed as [y * COLS + x]
 std::vector<Cell> grid(COLS* ROWS);

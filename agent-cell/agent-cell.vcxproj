@@ -138,6 +138,7 @@
     <ClCompile Include="entityManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cell.hpp" />
     <ClInclude Include="component.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="entity.hpp" />
