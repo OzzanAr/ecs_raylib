@@ -134,15 +134,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="agent-cell.cpp" />
+    <ClCompile Include="agents.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="grid.cpp" />
+    <ClCompile Include="simulation.cpp" />
+    <ClCompile Include="system.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="component.hpp" />
+    <ClInclude Include="agents.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="entity.hpp" />
-    <ClInclude Include="entityManager.hpp" />
     <ClInclude Include="grid.h" />
+    <ClInclude Include="simulation.h" />
+    <ClInclude Include="systems.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
