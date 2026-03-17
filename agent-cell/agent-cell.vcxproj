@@ -135,7 +135,6 @@
   <ItemGroup>
     <ClCompile Include="agent-cell.cpp" />
     <ClCompile Include="agents.cpp" />
-    <ClCompile Include="entity.cpp" />
     <ClCompile Include="grid.cpp" />
     <ClCompile Include="simulation.cpp" />
     <ClCompile Include="system.cpp" />
